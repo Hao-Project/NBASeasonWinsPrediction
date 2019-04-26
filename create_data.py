@@ -100,4 +100,12 @@ game_data = game_data.merge(
 )
 game_data = game_data.drop(columns=["Opponent_Opponent", "Team_Opponent"])
 
+game_data["AvgPointDiffBeforeGameMinusOpponent"] = (
+    game_data["AvgPointDiffBeforeGame"] - game_data["AvgPointDiffBeforeGame_Opponent"]
+)
+
+game_data["WinPctBeforeGameMinusOpponent"] = (
+    game_data["WinPctBeforeGame"] - game_data["WinPctBeforeGame_Opponent"]
+)
+
 game_data.to_csv("data/intermediate/dataForPrediction.csv")
