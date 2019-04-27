@@ -54,8 +54,10 @@ def get_conference(division):
 game_data["Conference"] = game_data["Division"].apply(get_conference)
 game_data["inWestConference"] = (game_data["Conference"] == "West")
 
+# Get whether play at home
 game_data["atHome"] = (game_data["Home"] == "Home")
 
+# Get number of days rested since last day
 game_data["GameDate"] = pd.to_datetime(game_data["Date"], format="%Y-%m-%d")
 game_data["LastGameDate"] = game_data.groupby(["Season", "Team"])["GameDate"].shift(
     1, fill_value=np.nan
@@ -106,6 +108,7 @@ game_data = game_data.drop(
     columns=["CumSumPointDiffAfterGame", "CumSumPointDiffBeforeGame"]
 )
 
+# Merge Opponent Data
 game_data = game_data.merge(
     game_data[
         [
@@ -123,14 +126,17 @@ game_data = game_data.merge(
 )
 game_data = game_data.drop(columns=["Opponent_Opponent", "Team_Opponent"])
 
+# Get difference of average point differential between self and opponent
 game_data["AvgPointDiffBeforeGameMinusOpponent"] = (
     game_data["AvgPointDiffBeforeGame"] - game_data["AvgPointDiffBeforeGame_Opponent"]
 )
 
+# Get difference of win percentage between self and opponent
 game_data["WinPctBeforeGameMinusOpponent"] = (
     game_data["WinPctBeforeGame"] - game_data["WinPctBeforeGame_Opponent"]
 )
 
+# Get difference of number of days rested between self and opponent
 game_data["NumDaysRestedMinusOpponent"] = (
     game_data["NumDaysRested"] - game_data["NumDaysRested_Opponent"]
 )
