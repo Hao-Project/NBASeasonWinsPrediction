@@ -56,6 +56,22 @@ game_data["inWestConference"] = (game_data["Conference"] == "West")
 
 game_data["atHome"] = (game_data["Home"] == "Home")
 
+game_data["GameDate"] = pd.to_datetime(game_data["Date"], format="%Y-%m-%d")
+game_data["LastGameDate"] = game_data.groupby(["Season", "Team"])["GameDate"].shift(
+    1, fill_value=np.nan
+)
+game_data["NumDaysRested"] = np.where(
+    game_data["Game"] == 1,
+    np.nan,
+    (game_data["GameDate"] - game_data["LastGameDate"]).dt.days,
+)
+game_data["RestedOneDay"] = np.where(
+    game_data["Game"] == 1, np.nan, (game_data["NumDaysRested"] == 1)
+)
+game_data["RestedTwoDays"] = np.where(
+    game_data["Game"] == 1, np.nan, (game_data["NumDaysRested"] == 2)
+)
+
 # Create Win Percentage Data
 game_data["WinsAdded"] = np.where(game_data["WINorLOSS"] == "W", 1, 0)
 game_data["CumSumWinsAfterGame"] = game_data.groupby(["Season", "Team"])[
@@ -92,7 +108,14 @@ game_data = game_data.drop(
 
 game_data = game_data.merge(
     game_data[
-        ["Date", "Opponent", "Team", "WinPctBeforeGame", "AvgPointDiffBeforeGame"]
+        [
+            "Date",
+            "Opponent",
+            "Team",
+            "WinPctBeforeGame",
+            "AvgPointDiffBeforeGame",
+            "NumDaysRested",
+        ]
     ],
     left_on=["Date", "Team", "Opponent"],
     right_on=["Date", "Opponent", "Team"],
@@ -106,6 +129,10 @@ game_data["AvgPointDiffBeforeGameMinusOpponent"] = (
 
 game_data["WinPctBeforeGameMinusOpponent"] = (
     game_data["WinPctBeforeGame"] - game_data["WinPctBeforeGame_Opponent"]
+)
+
+game_data["NumDaysRestedMinusOpponent"] = (
+    game_data["NumDaysRested"] - game_data["NumDaysRested_Opponent"]
 )
 
 game_data.to_csv("data/intermediate/dataForPrediction.csv")
